@@ -1,44 +1,44 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { TaskPropertyDto } from './dto/task-property.dto';
+import { TaskStatusPipe } from './pipe/task-status.pipe';
+import { Task } from './task.entity';
+import { TasksService } from './tasks.service';
 
 @Controller('tasks')
 export class TasksController {
-  @Get()
-  getTasks() {
-    return 'getTasks Success!';
-  }
+    constructor(
+        private tasksService: TasksService
+    ) {}
 
-  @Get('/:id')
-  getTaskById(@Param('id', ParseIntPipe) id: number) {
-    return `getTaskById Success! Parameter [id:${id}]`;
-  }
+    @Get()
+    getTasks(): Promise<Task[]> {
+        return this.tasksService.getTasks();
+    }
 
-  @Post()
-  createTask(
-    @Body('title') title: string,
-    @Body('description') description: string,
-  ) {
-    return `createTask Success! Prameter [title:${title}, descritpion:${description}]`;
-  }
+    @Get('/:id')
+    getTaskById(
+        @Param('id', ParseIntPipe) id: number): Promise<Task> {
+        return this.tasksService.getTaskById(id);
+    }
 
-  @Delete('/:id')
-  deleteTask(@Param('id', ParseIntPipe) id: number) {
-    return `deleteTask Success! Prameter [id:${id}]`;
-  }
+    @Post()
+    @UsePipes(ValidationPipe)
+    createTask(
+        @Body() taskPropertyDto: TaskPropertyDto
+        ): Promise<Task> {
+        return this.tasksService.createTask(taskPropertyDto);
+    }
 
-  @Patch('/:id')
-  updateTask(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('status') status: string,
-  ) {
-    return `updateTask Success! Prameter [id:${id}, status:${status}]`;
-  }
+    @Delete('/:id')
+    deleteTask(
+        @Param('id', ParseIntPipe) id: number): Promise<void> {
+        return this.tasksService.deleteTask(id);
+    }
+
+    @Patch('/:id')
+    updateTask(
+        @Param('id', ParseIntPipe) id: number,
+        @Body('status',TaskStatusPipe) status: string ): Promise<Task> {
+        return this.tasksService.updateTask(id, status);
+    }
 }
