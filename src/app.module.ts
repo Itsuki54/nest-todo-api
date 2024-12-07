@@ -1,20 +1,20 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { TypeOrmConfigService } from './config/typeorm-config.service';
-import { TasksModule } from './tasks/tasks.module';
+import { Module } from '@nestjs/common'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { Task } from './tasks/task.entity'
+import { TasksController } from './tasks/tasks.controller'
+import { TasksService } from './tasks/tasks.service'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: [`.env/${process.env.NODE_ENV}.env`,'.env/default.env'],
-      isGlobal: true,
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
+      database: 'data/todoapp.db',
+      entities: [Task],
+      synchronize: true,
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useClass: TypeOrmConfigService,
-    }),
-    TasksModule,
+    TypeOrmModule.forFeature([Task]),
   ],
+  providers: [TasksService],
+  controllers: [TasksController],
 })
 export class AppModule {}
